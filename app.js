@@ -53,8 +53,8 @@ app.get("/", function(req, res) {
         } else {
           console.log('Successfully saved data!')
         }
+        res.redirect('/')
       })
-      res.redirect('/')
     } else {
     res.render("list", {listTitle: 'Today', newListItems: foundItems})
     }
@@ -76,8 +76,13 @@ app.post("/", function(req, res){
   } else {
     List.findOne({name: category}, function(error, foundList){
       foundList.items.push(item)
-      foundList.save()
-      res.redirect(`/${category}`)
+      foundList.save(function(err){
+        if(err){
+          throw err
+        } else {
+          res.redirect(`/${category}`)
+        }
+      })
     })
   }
 })
@@ -121,10 +126,15 @@ app.get('/:name', function(req, res){
   List.findOne({name:category},function(err, foundList){
     if(!foundList){
       const list = new List({name:category, items:defaultItems})
-      list.save()
-      res.redirect(`/${category}`)
+      list.save(function(err) {
+        if (err){
+          throw err;
+        } else {
+          res.redirect(`/${category}`)
+        }
+      })
     } else {
-      // show and existing list
+      // show an existing list
       res.render('list', {listTitle: category, newListItems: foundList.items})
     }
   })
